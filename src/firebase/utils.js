@@ -15,6 +15,35 @@ const config = {
 
 firebase.initializeApp(config);
 
+// Function that allow us get user from auth object
+export const createUserProfileDocument = async (userAuth, additionalData) => {
+  if (!userAuth) return;
+
+  // Find required data by user id
+  const userRef = firestore.doc(`users/${userAuth.uid}`);
+
+  // Represents the data
+  const snapShot = await userRef.get();
+
+  if (!snapShot.exists) {
+    const { displayName, email } = userAuth;
+    const createdAt = new Date();
+
+    try {
+      await userRef.set({
+        displayName,
+        email,
+        createdAt,
+        ...additionalData,
+      });
+    } catch (error) {
+      console.log('error creating user', error.message);
+    }
+  }
+
+  return userRef;
+}
+
 export const auth = firebase.auth();
 export const firestore = firebase.firestore();
 
