@@ -47,6 +47,44 @@ export const createUserProfileDocument = async (userAuth, additionalData) => {
 export const auth = firebase.auth();
 export const firestore = firebase.firestore();
 
+export const addCollectionAndDocuments = async (collectionKey, objectsToAdd) => {
+  const collectionRef = firestore.collection(collectionKey);
+
+  const batch = firestore.batch();
+
+  objectsToAdd.forEach(obj => {
+    // Please firebase create new reference with unique ID;
+    const newDocRef = collectionRef.doc();
+
+    // If we pass something inside doc, this will be our ID
+    // const newDocRef = collectionRef.doc(obj.title);
+
+    batch.set(newDocRef, obj);
+  });
+
+  // commit it's a Promise
+  await batch.commit();
+};
+
+export const convertCollectionsSnapShotToMap = (collection) => {
+  const transformedCollection = collection.docs.map(doc => {
+    const { title, items } = doc.data();
+
+    // encodeURI handle characters that can't be read by url ^*$ etc...
+    return {
+      routeName: encodeURI(title),
+      id: doc.id,
+      title,
+      items,
+    };
+  });
+
+  return transformedCollection.reduce((accumulator, collection) => {
+    accumulator[collection.title.toLowerCase()] = collection;
+    return accumulator;
+  }, {})
+}
+
 const provider = new firebase.auth.GoogleAuthProvider();
 provider.setCustomParameters({ prompt: 'select_account '});
 

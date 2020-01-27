@@ -6,8 +6,9 @@ import ShopPage from './pages/shop-page';
 import CheckoutPage from './pages/checkout-page';
 import SignInUp from './pages/sign-in-up';
 import Header from './components/header';
-import { auth, createUserProfileDocument } from './firebase/utils';
+import { auth, createUserProfileDocument, addCollectionAndDocuments } from './firebase/utils';
 import { setCurrentUser } from './redux/user/user-actions';
+import { selectCollectionForPreview } from './redux/shop/shop-selectors';
 import './App.css';
 
 class App extends React.Component {
@@ -22,7 +23,7 @@ class App extends React.Component {
   unsubscribeFromAuth = null;
 
   componentDidMount() {
-    const { setCurrentUser } = this.props;
+    const { setCurrentUser, collections } = this.props;
 
     this.unsubscribeFromAuth = auth.onAuthStateChanged(async userAuth => {
       if (userAuth) {
@@ -37,6 +38,12 @@ class App extends React.Component {
       }
 
       setCurrentUser(userAuth);
+
+      // Commit to avoid storing data each time when component refreshed
+      // addCollectionAndDocuments('collections', collections.map(collection => ({
+      //   title: collection.title,
+      //   items: collection.items,
+      // })));
     });
   }
 
@@ -61,7 +68,8 @@ class App extends React.Component {
 
 
 const mapStateToProps = state => ({
-  currentUser: state.user,
+  currentUser: state.user.currentUser,
+  collections: selectCollectionForPreview(state),
 });
 
 const mapDispatchToProps = (dispatch) => ({

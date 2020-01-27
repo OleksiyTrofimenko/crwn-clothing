@@ -1,4 +1,5 @@
 import collections from '../../data/shop';
+import { SET_COLLECTIONS } from './shop-types';
 
 const initialState = {
   collections,
